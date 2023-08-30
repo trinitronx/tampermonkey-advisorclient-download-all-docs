@@ -1,12 +1,4 @@
 'use strict';
-// var current_host = location.host;
-// var arr_links = document.links;
-// for (var i = arr_links.length - 1; i >= 0; i--) {
-//     var link = arr_links[i];
-//     if (link.href == null && link.onclick) {
-//         console.log(link);
-//     }
-// }
 
 // String.toProperCase() function
 // returns the string in Proper Case
@@ -37,7 +29,7 @@ function getAccountNumber() {
     // const account_select_el_xpath = "//(app-statements|app-trade-confirmations)/*//select[@name=\"account\" or @data-account-filter]/option[2]"; // 2nd child <option> el has value=accountNumber
     const account_select_el_xpath = "//select[@name=\"account\" or @data-account-filter or @name=\"account-selector\" or @data-account-selector]/option";  // Don't trust ordering of child <option>, find first one manually
     var account_select_option_els = getElementSnapshotByXpath(account_select_el_xpath);
-    console.log('Looping over account select->option elements snapshot: ' + account_select_option_els);
+    // console.log('Looping over account select->option elements snapshot: ' + account_select_option_els);
 
     var first_candidate_el = null;
     for (var i = 0; i < account_select_option_els.snapshotLength; i++) {
@@ -195,7 +187,6 @@ function getAllTDAmeritradeDocRows() {
     // Then, walk back up the DOM tree until we get to that same top-level row div
     // This div contains both the fake columns with trade info, and the fake onclick link to PDF launcher JS crap
     var xpath = '//div[@role = "row" and @row-index]//span[@data-trade-date]/../../../../.';
-    // var doc_rows = getElementByXpath(xpath);  // Had to refactor to use snapshot b/c/ DOM was mutated after 2 downloads
     var doc_rows = getElementSnapshotByXpath(xpath);
     return doc_rows;
 }
@@ -235,29 +226,6 @@ async function generate_text_download(filename, text) {
     document.body.removeChild(element);
 }
 
-// Can't use iterateNext / ORDERED_NODE_ITERATOR_TYPE with sleep Promise function... b/c DOM was mutated after 2 downloads
-// async function downloadAllDocs() {
-//     var iter_doc_rows = getAllTDAmeritradeDocRows();
-//     var post_process_script_cmds = ['']; // first element empty so console log lines easy to copy & paste later!
-//     while (node = iter_doc_rows.iterateNext()) {
-//         console.log(node);
-//         // getTradeData(node);
-//         // click link, assume 'document.pdf' is row-index 0
-//         getChildLink(node).click();
-//         await new Promise(r => setTimeout(r, 1000)); // avoid file download ordering races so renames work properly
-//         // console.log(getChildLink(node));
-//         var row_index = node.getAttribute('row-index');
-//         var filename_src_prefix = 'document';
-//         var filename_src_ext = '.pdf';
-//         var filename_src_index = (row_index == '0') ? '' : ' (' + row_index + ')';
-//         var filename_dest = getTradeData(node);
-//         // output appropriate file move command for post-processing
-//         var move_command = "mv '" + filename_src_prefix + filename_src_index + filename_src_ext + "'  '" + filename_dest + "'";
-//         post_process_script_cmds.push(move_command);
-//     }
-//     console.log(post_process_script_cmds.join('\n'));
-// }
-
 // Find and click on all Trade Confirmations pdf view buttons
 // This function assumes the user has configured the browser to open PDFs as downloads rather than viewing in browser tabs
 // Note that we must wait for each one to finish to avoid race conditions in file name ordering and writing (I/O)
@@ -267,8 +235,8 @@ async function downloadAllDocs() {
     var post_process_script_cmds = ['#!/bin/sh', '']; // first element empty so console log lines easy to copy & paste later!
     for (var i = 0; i < snapshot_doc_rows.snapshotLength; i++) {
         var node = snapshot_doc_rows.snapshotItem(i);
-        console.log(node);
-        // getTradeData(node);
+        // console.log(node);
+
         // click link, assume 'document.pdf' is row-index 0
         getChildLink(node).click();
         await new Promise(r => setTimeout(r, 1000)); // avoid file download ordering races so renames work properly
